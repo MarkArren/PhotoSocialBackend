@@ -117,4 +117,8 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# GCP Key
 google-cloud-key.json
+
+# Test images
+src/test/img/

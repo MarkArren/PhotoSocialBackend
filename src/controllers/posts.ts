@@ -14,6 +14,13 @@ export const uploadPost = async (req: any, res: Response) => {
         // Upload images to cloud bucket
         const files = req.files;
         const caption = req.body.caption;
+
+        // Check if files are attached
+        if (!files) return res.status(400).json('Please attach files');
+        if (files.length == 0) return res.status(400).json('No images/ videos attached');
+        if (files.length > 10) return res.status(400).json('Too many pictues/ videos');
+
+        // TODO compress images before uploading
         console.log('Uploading images to GCP');
         const imageUrls = await uploadImages(files);
 
@@ -25,6 +32,7 @@ export const uploadPost = async (req: any, res: Response) => {
         }
 
         // Add post to db
+        // TODO add user_id from user auth
         console.log('Adding post to DB');
         await query(
             `INSERT INTO posts (user_id, caption) 
