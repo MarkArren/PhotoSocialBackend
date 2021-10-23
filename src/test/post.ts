@@ -29,11 +29,12 @@ describe('POST tests for posts', () => {
             .post('/post')
             .set('content-type', 'multipart/form-data')
             .field('caption', 'Test post with single image')
-            .attach('images', fs.readFileSync(`${__dirname}\\img\\Busingeandflames2.png`), 'tests\\file.png');
+            .attach('images', fs.readFileSync(`${__dirname}\\img\\Beandflames2.png`), 'tests\\file.png');
 
         res.should.have.status(200);
         res.should.exist;
-        res.body.post.should.have.property('post_id');
+        res.body.post.should.have.property('id');
+        res.body.post['id'].should.not.equal('-1');
     });
 
     it('it should POST a new post w/ two images', async () => {
@@ -42,12 +43,13 @@ describe('POST tests for posts', () => {
             .post('/post')
             .set('content-type', 'multipart/form-data')
             .field('caption', 'this is a test post')
-            .attach('images', fs.readFileSync(`${__dirname}\\img\\Busingeandflames2.png`), 'tests/file.png')
+            .attach('images', fs.readFileSync(`${__dirname}\\img\\Beandflames2.png`), 'tests/file.png')
             .attach('images', fs.readFileSync(`${__dirname}\\img\\SeanOxoCube.png`), 'tests/file.png');
 
         res.should.have.status(200);
         res.body.should.exist;
-        res.body.post.should.have.property('post_id');
+        res.body.post.should.have.property('id');
+        res.body.post['id'].should.not.equal('-1');
     });
 
     it('it should POST a new post w/ 1 photo + video', async () => {
@@ -56,11 +58,12 @@ describe('POST tests for posts', () => {
             .post('/post')
             .set('content-type', 'multipart/form-data')
             .field('caption', 'this is a test post')
-            .attach('images', fs.readFileSync(`${__dirname}\\img\\Busingeandflames2.png`), 'tests/file.png')
+            .attach('images', fs.readFileSync(`${__dirname}\\img\\Beandflames2.png`), 'tests/file.png')
             .attach('images', fs.readFileSync(`${__dirname}\\img\\Hellobozo.mp4`), 'tests/file.png');
 
         res.should.have.status(200);
         res.body.should.exist;
-        res.body.post.should.have.property('post_id');
+        res.body.post.should.have.property('id');
+        res.body.post['id'].should.not.equal('-1');
     });
 });

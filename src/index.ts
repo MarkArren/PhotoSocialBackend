@@ -20,11 +20,4 @@ app.get('/test/', (req, res) => {
     res.status(200).send('Hello World Test');
 });
 
-// query('SELECT * FROM users', [], (err: any, result: any) => {
-//     if (err) {
-//         console.log(err);
-//     }
-//     console.log(result.rows[0]);
-// });
-
 app.listen(port);
