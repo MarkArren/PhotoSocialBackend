@@ -29,7 +29,7 @@ describe('POST tests for posts', () => {
             .post('/post')
             .set('content-type', 'multipart/form-data')
             .field('caption', 'Test post with single image')
-            .attach('images', fs.readFileSync(`${__dirname}\\img\\Beandflames2.png`), 'tests\\file.png');
+            .attach('images', fs.readFileSync(`${__dirname}\\img\\Bandflames2.png`), 'tests\\file.png');
 
         res.should.have.status(200);
         res.should.exist;
@@ -43,7 +43,7 @@ describe('POST tests for posts', () => {
             .post('/post')
             .set('content-type', 'multipart/form-data')
             .field('caption', 'this is a test post')
-            .attach('images', fs.readFileSync(`${__dirname}\\img\\Beandflames2.png`), 'tests/file.png')
+            .attach('images', fs.readFileSync(`${__dirname}\\img\\Bandflames2.png`), 'tests/file.png')
             .attach('images', fs.readFileSync(`${__dirname}\\img\\SeanOxoCube.png`), 'tests/file.png');
 
         res.should.have.status(200);
@@ -58,7 +58,7 @@ describe('POST tests for posts', () => {
             .post('/post')
             .set('content-type', 'multipart/form-data')
             .field('caption', 'this is a test post')
-            .attach('images', fs.readFileSync(`${__dirname}\\img\\Beandflames2.png`), 'tests/file.png')
+            .attach('images', fs.readFileSync(`${__dirname}\\img\\Bandflames2.png`), 'tests/file.png')
             .attach('images', fs.readFileSync(`${__dirname}\\img\\Hellobozo.mp4`), 'tests/file.png');
 
         res.should.have.status(200);
