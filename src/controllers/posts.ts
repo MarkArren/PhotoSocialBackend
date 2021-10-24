@@ -12,6 +12,7 @@ export const uploadPost = async (req: any, res: Response) => {
     try {
         const files = req.files;
         const caption = req.body.caption;
+        const user = req.user;
 
         // Check if files are attached
         if (!files) return res.status(400).json('Please attach files');
@@ -19,7 +20,6 @@ export const uploadPost = async (req: any, res: Response) => {
         if (files.length > 10) return res.status(400).json('Too many pictues/ videos');
 
         // TODO compress images before uploading
-        console.log('Uploading images to GCP');
         const imageUrls = await uploadImagesToBucket(files);
 
         // Check if imageUrls is not null
@@ -30,23 +30,20 @@ export const uploadPost = async (req: any, res: Response) => {
         }
 
         // Add post to db
-        // TODO add user_id from user auth
-        console.log('Adding post to DB');
-        post_id = await insertPost('9bc8b526-ba0d-4fdb-96b1-19a7592a7601', caption);
+        post_id = await insertPost(user.id, caption);
 
         if (!post_id) return res.status(500).json('Failed to add post to DB');
 
         // Add post_files to db
-        console.log('Adding post_files to DB');
         const postFilesIDs = await insertPostFiles(post_id, imageUrls);
     } catch (err: any) {
-        console.log(err);
+        console.error(err);
         res.status(500).json('/POST Failed ');
         return;
     }
 
     res.status(200).json({ message: 'success', post: { id: post_id } });
-    console.log(`Successfully uploaded post with id: ${post_id}`);
+    // console.log(`Successfully uploaded post with id: ${post_id}`);
 };
 
 export const updatePost = async (req: Request, res: Response) => {

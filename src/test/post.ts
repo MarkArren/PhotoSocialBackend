@@ -6,6 +6,7 @@ import chai from 'chai';
 import chaiHttp from 'chai-http';
 import { app } from '../index';
 import fs from 'fs';
+import { query } from '../db/index';
 
 let should = chai.should();
 
@@ -13,13 +14,35 @@ let should = chai.should();
 chai.use(chaiHttp);
 
 describe('POST tests for posts', () => {
+    let token: string;
+
+    before(async () => {
+        // Get access token from login
+        const res = await chai.request(app).post('/login').send({ email: 'bob@test.com', password: 'password' });
+        token = res.body.token;
+
+        // Clear tables 'posts' & 'post_files'
+        const qRes = await query('TRUNCATE posts CASCADE', []);
+    });
+
+    it('it should not POST not post wo/ token', async () => {
+        const res = await chai
+            .request(app)
+            .post('/post')
+            .set('content-type', 'multipart/form-data')
+            .field('caption', 'Test post with single image')
+            .attach('images', fs.readFileSync(`${__dirname}\\img\\Bandflames2.png`), 'tests\\file.png');
+
+        res.should.have.status(401);
+    });
+
     it('it should not POST a post without an image/ video', async () => {
         const res = await chai
             .request(app)
             .post('/post')
             .set('content-type', 'multipart/form-data')
+            .auth(token, { type: 'bearer' })
             .field('caption', 'this is a post without an image');
-
         res.should.have.status(400);
     });
 
@@ -28,6 +51,8 @@ describe('POST tests for posts', () => {
             .request(app)
             .post('/post')
             .set('content-type', 'multipart/form-data')
+            .auth(token, { type: 'bearer' })
+            .field('token', token)
             .field('caption', 'Test post with single image')
             .attach('images', fs.readFileSync(`${__dirname}\\img\\Bandflames2.png`), 'tests\\file.png');
 
@@ -42,6 +67,7 @@ describe('POST tests for posts', () => {
             .request(app)
             .post('/post')
             .set('content-type', 'multipart/form-data')
+            .auth(token, { type: 'bearer' })
             .field('caption', 'Test post with two images')
             .attach('images', fs.readFileSync(`${__dirname}\\img\\Bandflames2.png`), 'tests/file.png')
             .attach('images', fs.readFileSync(`${__dirname}\\img\\SeanOxoCube.png`), 'tests/file.png');
@@ -57,6 +83,7 @@ describe('POST tests for posts', () => {
             .request(app)
             .post('/post')
             .set('content-type', 'multipart/form-data')
+            .auth(token, { type: 'bearer' })
             .field('caption', 'Test post with 1 img + 1vid')
             .attach('images', fs.readFileSync(`${__dirname}\\img\\Bandflames2.png`), 'tests/file.png')
             .attach('images', fs.readFileSync(`${__dirname}\\img\\Hellobozo.mp4`), 'tests/file.png');

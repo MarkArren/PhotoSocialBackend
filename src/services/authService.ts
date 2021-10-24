@@ -34,6 +34,14 @@ export const insertUser = (email: string, password: string, username: string, na
     });
 };
 
+/**
+ * Creates new user in DB
+ * @param email Email
+ * @param password Password
+ * @param username Username
+ * @param name Name
+ * @returns Promise<void>
+ */
 export const createUser = (email: string, password: string, username: string, name: string) => {
     return new Promise<void>(async (resolve, reject) => {
         try {
@@ -56,7 +64,7 @@ export const createUser = (email: string, password: string, username: string, na
 };
 
 /**
- * Returns user if password is correct
+ * Get user from DB and verifys the password is correct
  * @param email Email of user
  * @param password Password of user
  * @returns Promise<object> - User

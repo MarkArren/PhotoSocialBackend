@@ -2,6 +2,48 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { createTokens, createUser, loginUser, verifyRefreshToken } from '../services/authService';
 
+/**
+ * Controller for user log in
+ * @param req
+ * @param res
+ * @returns
+ */
+export const login = async (req: Request, res: Response) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    if (!email || !password) return res.status(400).json('Missing email or password');
+
+    // Get user from DB and verifys password
+    let user;
+    try {
+        user = await loginUser(email, password);
+    } catch (err) {
+        return res.status(400).json('Incorrect Email or Password');
+    }
+
+    if (!user) {
+        return res.status(400).json('Incorrect Email or Password');
+    }
+
+    // Create new token and refresh token
+    const [token, refreshToken] = createTokens(user);
+
+    // Send token back
+    return res.status(200).json({
+        auth: true,
+        token,
+        refreshToken,
+        message: 'Successful login',
+    });
+};
+
+/**
+ * Controller for user sign up
+ * @param req
+ * @param res
+ * @returns
+ */
 export const signup = async (req: Request, res: Response) => {
     const email = req.body.email;
     const password = req.body.password;
@@ -59,7 +101,6 @@ export const refreshToken = async (req: Request, res: Response) => {
     if (!decryptedToken.sub) return res.status(400).json('Refresh token invalid');
 
     // Create tokens
-    console.log(decryptedToken.sub);
     const [newToken, newRefreshToken] = createTokens({ id: decryptedToken.sub });
 
     // Send token back
