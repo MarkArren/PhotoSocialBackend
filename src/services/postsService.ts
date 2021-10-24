@@ -131,6 +131,25 @@ export const insertPostFile = (post_id: string, fileUrl: string) => {
     });
 };
 
-// https://www.smashingmagazine.com/2020/04/express-api-backend-project-postgresql/
-// https://www.coreycleary.me/what-is-the-difference-between-controllers-and-services-in-node-rest-apis
-// https://geshan.com.np/blog/2021/01/nodejs-postgresql-tutorial/
+/**
+ * Delete post from 'posts' table
+ * @param post_id
+ * @param user_id
+ * @returns Promise<void>
+ */
+export const deletePostDB = (post_id: string, user_id: string) => {
+    return new Promise<void>((resolve, reject) => {
+        query(`DELETE FROM posts CASCADE WHERE id=$1 AND user_id=$2;`, [post_id, user_id])
+            .then((res: QueryResult) => {
+                if (res.rowCount === 1) return resolve();
+                else if (res.rowCount === 0) return reject('Failed to delete post');
+
+                console.error('Multiple rows deleted when deleting post!');
+                reject('Multiple posts deleted');
+            })
+            .catch((err: Error) => {
+                console.error(err.message);
+                reject('Failed to delete post');
+            });
+    });
+};

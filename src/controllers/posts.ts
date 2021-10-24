@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { uploadImagesToBucket, insertPost, insertPostFiles } from '../services/postService';
+import { uploadImagesToBucket, insertPost, insertPostFiles, deletePostDB } from '../services/postsService';
 
 export const getPost = async (req: Request, res: Response) => {
     const { id: _id } = req.params;
@@ -47,11 +47,25 @@ export const uploadPost = async (req: any, res: Response) => {
 };
 
 export const updatePost = async (req: Request, res: Response) => {
-    const { id: _id } = req.params;
-    res.status(200).json('/UPDATE request to post with id');
+    try {
+        const user = req.user;
+        res.status(200).json('/UPDATE request to post with id');
+    } catch (err) {
+        console.error(err);
+        res.status(500).json('/POST Failed ');
+    }
 };
 
-export const likePost = async (req: Request, res: Response) => {
-    const { id: _id } = req.params;
-    res.status(200).json('/POST request to add or remove like');
+export const deletePost = async (req: any, res: Response) => {
+    try {
+        const user = req.user;
+        const { id: post_id } = req.params;
+
+        await deletePostDB(post_id, user.id);
+
+        res.status(200).json('/UPDATE request to post with id');
+    } catch (err) {
+        console.error(err);
+        res.status(500).json(err);
+    }
 };
