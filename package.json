@@ -8,7 +8,7 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "build": "tsc",
     "start": "nodemon -r dotenv/config src/index.ts",
-    "test": "mocha -r dotenv/config -r ts-node/register 'src/test/**/*.ts' --timeout 10000 --exit"
+    "test": "mocha -r dotenv/config -r ts-node/register 'src/test/**/*.ts' --timeout 2000 --exit"
   },
   "keywords": [],
   "author": "",

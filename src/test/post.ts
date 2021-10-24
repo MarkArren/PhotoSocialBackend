@@ -42,7 +42,7 @@ describe('POST tests for posts', () => {
             .request(app)
             .post('/post')
             .set('content-type', 'multipart/form-data')
-            .field('caption', 'this is a test post')
+            .field('caption', 'Test post with two images')
             .attach('images', fs.readFileSync(`${__dirname}\\img\\Bandflames2.png`), 'tests/file.png')
             .attach('images', fs.readFileSync(`${__dirname}\\img\\SeanOxoCube.png`), 'tests/file.png');
 
@@ -57,7 +57,7 @@ describe('POST tests for posts', () => {
             .request(app)
             .post('/post')
             .set('content-type', 'multipart/form-data')
-            .field('caption', 'this is a test post')
+            .field('caption', 'Test post with 1 img + 1vid')
             .attach('images', fs.readFileSync(`${__dirname}\\img\\Bandflames2.png`), 'tests/file.png')
             .attach('images', fs.readFileSync(`${__dirname}\\img\\Hellobozo.mp4`), 'tests/file.png');
 

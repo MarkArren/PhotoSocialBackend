@@ -1,7 +1,6 @@
 import express from 'express';
 import passport from 'passport';
-import jwt from 'jsonwebtoken';
-import { refreshToken } from '../controllers/auth';
+import { refreshToken, signup } from '../controllers/auth';
 import { createTokens } from '../services/authService';
 
 const router = express.Router();
@@ -39,6 +38,7 @@ router.post('/login', async (req, res, next) => {
 
 // Refresh token endpoint - NOTE use a GET Request to limit CSRF
 router.get('/token', refreshToken);
+router.post('/signup', signup);
 
 // router.get('/login', getPost);
 // router.post('/signup', getPost);

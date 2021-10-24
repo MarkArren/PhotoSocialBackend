@@ -34,6 +34,27 @@ export const insertUser = (email: string, password: string, username: string, na
     });
 };
 
+export const createUser = (email: string, password: string, username: string, name: string) => {
+    return new Promise<void>(async (resolve, reject) => {
+        try {
+            // Hash password
+            const password_hash = await bcrypt.hash(password, 10);
+            // Create user in DB
+            const res = await query(
+                `INSERT INTO users
+                (email, password_hash, username, name)
+                VALUES ($1, $2, $3, $4)`,
+                [email, password_hash, username, name],
+            );
+
+            if (res.rowCount === 1) resolve();
+            reject('Could not add to DB');
+        } catch (err) {
+            reject(err);
+        }
+    });
+};
+
 /**
  * Returns user if password is correct
  * @param email Email of user

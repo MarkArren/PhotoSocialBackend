@@ -11,6 +11,9 @@ import { v4 as uuidv4 } from 'uuid';
  */
 export const uploadImagesToBucket = (files: File[]) => {
     return new Promise<string[]>(async (resolve, reject) => {
+        // If testing return skip upload
+        if (process.env.NODE_ENV === 'test') resolve(Array.from({ length: files.length }, () => 'testURL.com'));
+
         resolve(await Promise.all(files.map(uploadImageToBucket)));
     });
 };
@@ -90,12 +93,18 @@ export const insertPost = (user_id: string, caption: string) => {
  * @returns Promise<null>
  */
 export const insertPostFiles = (post_id: string, fileUrls: string[]) => {
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<string[]>(async (resolve, reject) => {
         let promises: Promise<string>[] = [];
         fileUrls.forEach(async (fileUrl) => {
             promises.push(insertPostFile(post_id, fileUrl));
         });
-        return Promise.all(promises);
+
+        try {
+            let ids = await Promise.all(promises);
+            resolve(ids);
+        } catch (err) {
+            reject(err);
+        }
     });
 };
 

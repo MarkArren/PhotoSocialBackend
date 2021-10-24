@@ -97,3 +97,101 @@ describe('POST tests for /token', () => {
         res.body.should.have.property('refreshToken');
     });
 });
+
+describe('POST tests for /signup', () => {
+    it('it should give error - missing all fields', async () => {
+        const res = await chai
+            .request(app)
+            .post('/signup')
+            .set('content-type', 'application/x-www-form-urlencoded')
+            .send({ email: '', password: '', username: '', name: '' });
+
+        res.should.have.status(400);
+        res.body.should.not.have.property('token');
+        res.body.should.not.have.property('refreshToken');
+    });
+
+    it('it should give error - missing username, name', async () => {
+        const res = await chai
+            .request(app)
+            .post('/signup')
+            .set('content-type', 'application/x-www-form-urlencoded')
+            .send({ email: '112783612378112313@test.com', password: 'password', username: '', name: '' });
+
+        res.should.have.status(400);
+        res.body.should.not.have.property('token');
+        res.body.should.not.have.property('refreshToken');
+    });
+
+    it('it should give error - missing name', async () => {
+        const res = await chai
+            .request(app)
+            .post('/signup')
+            .set('content-type', 'application/x-www-form-urlencoded')
+            .send({ email: '112783612378112313@test.com', password: 'password', username: '12a78tsdg', name: '' });
+
+        res.should.have.status(400);
+        res.body.should.not.have.property('token');
+        res.body.should.not.have.property('refreshToken');
+    });
+
+    it('it should give error - missing email', async () => {
+        const res = await chai
+            .request(app)
+            .post('/signup')
+            .set('content-type', 'application/x-www-form-urlencoded')
+            .send({ email: '', password: 'password', username: '12a78tsdg', name: 'name' });
+
+        res.should.have.status(400);
+        res.body.should.not.have.property('token');
+        res.body.should.not.have.property('refreshToken');
+    });
+
+    it('it should give error - missing password', async () => {
+        const res = await chai
+            .request(app)
+            .post('/signup')
+            .set('content-type', 'application/x-www-form-urlencoded')
+            .send({ email: '123hjg4vbn2y78gsc@test.com', password: '', username: '12a78tsdg', name: 'name' });
+
+        res.should.have.status(400);
+        res.body.should.not.have.property('token');
+        res.body.should.not.have.property('refreshToken');
+    });
+
+    it('it should create user bob', async () => {
+        const res = await chai
+            .request(app)
+            .post('/signup')
+            .set('content-type', 'application/x-www-form-urlencoded')
+            .send({ email: 'bob@test.com', password: 'password', username: 'bob', name: 'bobby' });
+
+        res.should.have.status(200);
+        res.body.should.have.property('token');
+        res.body.should.have.property('refreshToken');
+    });
+
+    it('it should give error - email already taken', async () => {
+        const res = await chai
+            .request(app)
+            .post('/signup')
+            .set('content-type', 'application/x-www-form-urlencoded')
+            .send({ email: 'bob@test.com', password: 'password', username: '12a78tsdg', name: 'bobby' });
+
+        res.should.have.status(400);
+        res.body.should.not.have.property('token');
+        res.body.should.not.have.property('refreshToken');
+    });
+
+    it('it should give error - username already taken', async () => {
+        const res = await chai
+            .request(app)
+            .post('/signup')
+            .set('content-type', 'application/x-www-form-urlencoded')
+            .send({ email: '123hjg4vbn2y78gsc@test.com', password: 'password', username: 'bob', name: 'bobby' });
+
+        res.should.have.status(400);
+        res.body.should.not.have.property('token');
+        res.body.should.not.have.property('refreshToken');
+    });
+});

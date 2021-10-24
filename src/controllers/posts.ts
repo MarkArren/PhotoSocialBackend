@@ -38,7 +38,7 @@ export const uploadPost = async (req: any, res: Response) => {
 
         // Add post_files to db
         console.log('Adding post_files to DB');
-        const postFilesID = insertPostFiles(post_id, imageUrls);
+        const postFilesIDs = await insertPostFiles(post_id, imageUrls);
     } catch (err: any) {
         console.log(err);
         res.status(500).json('/POST Failed ');
