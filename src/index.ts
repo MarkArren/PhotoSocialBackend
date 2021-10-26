@@ -3,6 +3,7 @@ import cors from 'cors';
 import multer from 'multer';
 import postRoutes from './routes/posts';
 import authRoutes from './routes/auth';
+import userRoutes from './routes/users';
 import { query } from './db/index';
 import passport from 'passport';
 
@@ -20,6 +21,7 @@ app.use(passport.initialize());
 // Create routes
 app.use('/', authRoutes);
 app.use('/post', postRoutes);
+app.use('/', userRoutes);
 
 // Test routes
 app.get('/test/', (req, res) => {
