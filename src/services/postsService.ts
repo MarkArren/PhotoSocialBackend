@@ -3,6 +3,82 @@ import { QueryResult } from 'pg';
 import { query } from '../db/index';
 import { postsBucket } from '../db/gcp';
 import { v4 as uuidv4 } from 'uuid';
+import { httpError } from '../helper/error';
+
+interface Post {
+    id: string;
+    user_id: string;
+    caption: string;
+    created_at: string;
+}
+
+interface PostFile {
+    id: string;
+    post_id: string;
+    caption: string;
+    created_at: string;
+}
+
+export const getPost = (post_id: string) => {
+    return new Promise<Post>((resolve, reject) => {
+        query(`SELECT id, user_id, caption, created_at FROM posts WHERE id=$1`, [post_id])
+            .then((res: QueryResult) => {
+                if (res.rows.length === 1) return resolve(res.rows[0]);
+                else if (res.rows.length === 0) return reject(new httpError('Post not found', 404));
+
+                console.error(`Multiple posts with id: ${post_id}!`);
+                reject('Multiple users with username');
+            })
+            .catch((err) => {
+                if (err.code === '22P02') return reject(new httpError('Post not found', 404));
+                console.error(err.message);
+                reject('Failed to get post');
+            });
+    });
+};
+
+export const updatePost = (post_id: string, caption: string, user_id: string) => {
+    return new Promise<Post>((resolve, reject) => {
+        query(
+            `UPDATE posts 
+        SET caption=$1 
+        WHERE id=$2 AND user_id=$3
+        RETURNING id, user_id, caption, created_at`,
+            [caption, post_id, user_id],
+        )
+            .then((res: QueryResult) => {
+                if (res.rows.length === 1) return resolve(res.rows[0]);
+                else if (res.rows.length === 0) return reject(new httpError('Post not found', 404));
+
+                console.error(`Multiple posts with id: ${post_id}!`);
+                reject('Multiple users with username');
+            })
+            .catch((err) => {
+                if (err.code === '22P02') return reject(new httpError('Post not found', 404));
+                console.error(err.message);
+                reject('Failed to get post');
+            });
+    });
+};
+
+export const getPostFiles = (post_id: string) => {
+    return new Promise<any[]>((resolve, reject) => {
+        query(
+            `SELECT image_url, index 
+            FROM post_files 
+            WHERE post_id=$1`,
+            [post_id],
+        )
+            .then((res: QueryResult) => {
+                if (res.rowCount === 1) return resolve(res.rows[0]);
+                else if (res.rowCount === 0) return reject(new httpError('Post files not found', 404));
+            })
+            .catch((err: Error) => {
+                console.error(err.message);
+                reject('Failed to get post files');
+            });
+    });
+};
 
 /**
  * Uploads files (img/vid) to GCP Bucket
@@ -11,9 +87,6 @@ import { v4 as uuidv4 } from 'uuid';
  */
 export const uploadImagesToBucket = (files: File[]) => {
     return new Promise<string[]>(async (resolve, reject) => {
-        // If testing return skip upload
-        if (process.env.NODE_ENV === 'test') resolve(Array.from({ length: files.length }, () => 'testURL.com'));
-
         resolve(await Promise.all(files.map(uploadImageToBucket)));
     });
 };
@@ -23,8 +96,10 @@ export const uploadImagesToBucket = (files: File[]) => {
  * @param file File to be uploaded
  * @returns Promise<string> - URL of image
  */
-const uploadImageToBucket = async (file: any) =>
+export const uploadImageToBucket = async (file: any) =>
     new Promise<string>((resolve, reject) => {
+        // If testing return skip upload
+        if (process.env.NODE_ENV === 'test') return resolve('testURL.com');
         try {
             // Create file in bucket and write stream
             const filename = uuidv4();
@@ -95,8 +170,8 @@ export const insertPost = (user_id: string, caption: string) => {
 export const insertPostFiles = (post_id: string, fileUrls: string[]) => {
     return new Promise<string[]>(async (resolve, reject) => {
         let promises: Promise<string>[] = [];
-        fileUrls.forEach(async (fileUrl) => {
-            promises.push(insertPostFile(post_id, fileUrl));
+        fileUrls.forEach(async (fileUrl, index) => {
+            promises.push(insertPostFile(post_id, fileUrl, index));
         });
 
         try {
@@ -114,12 +189,12 @@ export const insertPostFiles = (post_id: string, fileUrls: string[]) => {
  * @param fileUrl URL of image/ video
  * @returns Promise<string> - ID of post_file
  */
-export const insertPostFile = (post_id: string, fileUrl: string) => {
+export const insertPostFile = (post_id: string, fileUrl: string, index: number) => {
     return new Promise<string>((resolve, reject) => {
         return query(
-            `INSERT INTO post_files (post_id, image_url) 
-            VALUES ($1, $2) RETURNING id`,
-            [post_id, fileUrl],
+            `INSERT INTO post_files (post_id, image_url, index) 
+            VALUES ($1, $2, $3) RETURNING id`,
+            [post_id, fileUrl, index],
         )
             .then((res: QueryResult) => {
                 resolve(res.rows[0]['id']);
@@ -139,15 +214,16 @@ export const insertPostFile = (post_id: string, fileUrl: string) => {
  */
 export const deletePostDB = (post_id: string, user_id: string) => {
     return new Promise<void>((resolve, reject) => {
-        query(`DELETE FROM posts CASCADE WHERE id=$1 AND user_id=$2;`, [post_id, user_id])
+        query(`DELETE FROM posts WHERE id=$1 AND user_id=$2`, [post_id, user_id])
             .then((res: QueryResult) => {
                 if (res.rowCount === 1) return resolve();
-                else if (res.rowCount === 0) return reject('Failed to delete post');
+                else if (res.rowCount === 0) return reject(new httpError('Post not found', 404));
 
                 console.error('Multiple rows deleted when deleting post!');
                 reject('Multiple posts deleted');
             })
-            .catch((err: Error) => {
+            .catch((err) => {
+                if (err.code === '22P02') return reject(new httpError('Post not found', 404));
                 console.error(err.message);
                 reject('Failed to delete post');
             });

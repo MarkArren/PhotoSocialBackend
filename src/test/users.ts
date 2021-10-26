@@ -22,7 +22,7 @@ describe('/{username} tests', () => {
 
     before(async () => {
         // Delete test users 'alpla' and 'bravo'
-        const qRes = await query('DELETE FROM users CASCADE WHERE username=$1 or username=$2', ['alpha', 'bravo']);
+        const qRes = await query('DELETE FROM users WHERE username=$1 or username=$2', ['alpha', 'bravo']);
 
         // Create users alpha & bravo
         const resAlpha = await chai

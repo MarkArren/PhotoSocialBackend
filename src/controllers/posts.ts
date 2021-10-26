@@ -1,9 +1,34 @@
 import { Request, Response } from 'express';
-import { uploadImagesToBucket, insertPost, insertPostFiles, deletePostDB } from '../services/postsService';
+import { httpError } from '../helper/error';
+import {
+    uploadImagesToBucket,
+    insertPost,
+    insertPostFiles,
+    deletePostDB,
+    getPostFiles,
+    getPost as getPostDB,
+    updatePost,
+} from '../services/postsService';
 
 export const getPost = async (req: Request, res: Response) => {
-    const { id: _id } = req.params;
-    res.status(200).json('/GET request to post with id');
+    try {
+        const user = req.user;
+        const { post_id: post_id } = req.params;
+
+        const post = await getPostDB(post_id);
+
+        const postFiles = await getPostFiles(post_id);
+
+        let result = { ...post, images: postFiles };
+
+        res.status(200).json(result);
+    } catch (err) {
+        if (err instanceof httpError) {
+            return res.status(err.httpCode).json(err.message);
+        }
+        console.error(err);
+        res.status(500).json(err);
+    }
 };
 
 export const uploadPost = async (req: any, res: Response) => {
@@ -46,25 +71,44 @@ export const uploadPost = async (req: any, res: Response) => {
     // console.log(`Successfully uploaded post with id: ${post_id}`);
 };
 
-export const updatePost = async (req: Request, res: Response) => {
+export const patchPost = async (req: any, res: Response) => {
     try {
         const user = req.user;
-        res.status(200).json('/UPDATE request to post with id');
+        const { post_id: post_id } = req.params;
+
+        // Check if caption is specified
+        if (!req.body.caption) throw new httpError('Caption not included', 400);
+
+        // Get post from DB and check if user is author of post
+        const post = await getPostDB(post_id);
+        if (post.user_id !== user.id) throw new httpError('Unable to edit post', 403);
+
+        // Check if caption hasnt changed
+        if (req.body.caption === post.caption) return res.status(200).json(post);
+        const postUpdated = await updatePost(post_id, req.body.caption, user.id);
+
+        res.status(200).json(postUpdated);
     } catch (err) {
+        if (err instanceof httpError) {
+            return res.status(err.httpCode).json(err.message);
+        }
         console.error(err);
-        res.status(500).json('/POST Failed ');
+        res.status(500).json(err);
     }
 };
 
 export const deletePost = async (req: any, res: Response) => {
     try {
         const user = req.user;
-        const { id: post_id } = req.params;
+        const { post_id: post_id } = req.params;
 
         await deletePostDB(post_id, user.id);
 
-        res.status(200).json('/UPDATE request to post with id');
+        res.status(200).json('Post deleted');
     } catch (err) {
+        if (err instanceof httpError) {
+            return res.status(err.httpCode).json(err.message);
+        }
         console.error(err);
         res.status(500).json(err);
     }

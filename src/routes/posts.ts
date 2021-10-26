@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import passport from 'passport';
-import { getPost, uploadPost, updatePost, deletePost } from '../controllers/posts';
+import { getPost, uploadPost, patchPost, deletePost } from '../controllers/posts';
 import { getLikes, likePost, unLikePost } from '../controllers/likes';
 import { addComment, getComments, removeComment } from '../controllers/comments';
 
@@ -10,7 +10,7 @@ const upload = multer();
 
 router.get('/:post_id', getPost);
 router.post('/', passport.authenticate('jwt', { session: false }), upload.array('images', 10), uploadPost);
-router.patch('/:post_id', passport.authenticate('jwt', { session: false }), updatePost);
+router.patch('/:post_id', passport.authenticate('jwt', { session: false }), patchPost);
 router.delete('/:post_id', passport.authenticate('jwt', { session: false }), deletePost);
 
 // Like routes

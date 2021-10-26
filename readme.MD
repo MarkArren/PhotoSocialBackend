@@ -35,7 +35,11 @@ A RESTful api backend created to interact with my frontend created in my [Capsto
 `DELETE /{username}`
 
 ## Post
+`GET /post`
+
 `POST /post`
+
+`PATCH /post`
 
 `DELETE /post`
 
