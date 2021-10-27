@@ -64,14 +64,14 @@ export const updatePost = (post_id: string, caption: string, user_id: string) =>
 export const getPostFiles = (post_id: string) => {
     return new Promise<any[]>((resolve, reject) => {
         query(
-            `SELECT image_url, index 
+            `SELECT filename, index 
             FROM post_files 
             WHERE post_id=$1`,
             [post_id],
         )
             .then((res: QueryResult) => {
-                if (res.rowCount === 1) return resolve(res.rows[0]);
-                else if (res.rowCount === 0) return reject(new httpError('Post files not found', 404));
+                if (res.rowCount === 0) return reject(new httpError('Post files not found', 404));
+                return resolve(res.rows);
             })
             .catch((err: Error) => {
                 console.error(err.message);
@@ -87,7 +87,7 @@ export const getPostFiles = (post_id: string) => {
  */
 export const uploadImagesToBucket = (files: File[]) => {
     return new Promise<string[]>(async (resolve, reject) => {
-        resolve(await Promise.all(files.map(uploadImageToBucket)));
+        resolve(await Promise.all(files.map((file) => uploadImageToBucket(file))));
     });
 };
 
@@ -96,7 +96,7 @@ export const uploadImagesToBucket = (files: File[]) => {
  * @param file File to be uploaded
  * @returns Promise<string> - URL of image
  */
-export const uploadImageToBucket = async (file: any) =>
+export const uploadImageToBucket = async (file: any, makePublic?: boolean) =>
     new Promise<string>((resolve, reject) => {
         // If testing return skip upload
         if (process.env.NODE_ENV === 'test') return resolve('testURL.com');
@@ -118,18 +118,15 @@ export const uploadImageToBucket = async (file: any) =>
             blobStream.on('finish', async () => {
                 // Create URL for directly file access via HTTP.
                 const publicUrl = `https://storage.googleapis.com/photo-social-posts/${blob.name}`;
-                // console.log('Succesfully upload image to gcp');
-                // try {
-                //     // Make the file public
-                //     await postsBucket.file(filename).makePublic();
-                // } catch {
-                //     return res.status(500).send({
-                //     message:
-                //         `Uploaded the file successfully: ${filename}, but public access is denied!`,
-                //     url: publicUrl,
-                //     });
-                // }
-                resolve(publicUrl);
+                if (makePublic) {
+                    try {
+                        // Make the file public
+                        await postsBucket.file(blob.name).makePublic();
+                    } catch (Err) {
+                        console.error(`Failed to make file: ${blob.name} public`);
+                    }
+                }
+                resolve(blob.name);
             });
 
             blobStream.end(file.buffer);
@@ -192,7 +189,7 @@ export const insertPostFiles = (post_id: string, fileUrls: string[]) => {
 export const insertPostFile = (post_id: string, fileUrl: string, index: number) => {
     return new Promise<string>((resolve, reject) => {
         return query(
-            `INSERT INTO post_files (post_id, image_url, index) 
+            `INSERT INTO post_files (post_id, filename, index) 
             VALUES ($1, $2, $3) RETURNING id`,
             [post_id, fileUrl, index],
         )

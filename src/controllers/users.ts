@@ -38,7 +38,7 @@ export const putUser = async (req: any, res: Response) => {
         // Check if profile_pic exists
         if (req.file) {
             try {
-                profilePic = await uploadImageToBucket(req.file);
+                profilePic = await uploadImageToBucket(req.file, true);
             } catch (err) {
                 res.status(500).json(err);
             }

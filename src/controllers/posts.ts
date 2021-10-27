@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { getSignedUrl } from '../db/gcp';
 import { httpError } from '../helper/error';
 import {
     uploadImagesToBucket,
@@ -15,11 +16,22 @@ export const getPost = async (req: Request, res: Response) => {
         const user = req.user;
         const { post_id: post_id } = req.params;
 
+        // Get post from db
         const post = await getPostDB(post_id);
 
+        // Get filenames from db
         const postFiles = await getPostFiles(post_id);
 
-        let result = { ...post, images: postFiles };
+        // Get signed urls of images from bucket
+        let images: any[] = [];
+        for (const postFile of postFiles) {
+            const [url] = await getSignedUrl(postFile['filename']);
+            images.push({ key: postFile['index'], value: url });
+            // images.push([postFile['index'], url]);
+        }
+
+        if (process.env.NODE_ENV === 'test') images = postFiles;
+        let result = { ...post, images };
 
         res.status(200).json(result);
     } catch (err) {

@@ -1,18 +1,17 @@
 # PhotoSocialBackend
 
-A RESTful api backend created to interact with my frontend created in my [Capstone](https://github.com/MarkArren/PhotoSharing) project which replace the existing Firebase backend. All data is stored in a PostGreSQL database, images/ videos are stored on a Google Cloud Platform Bucket.
+A RESTful api backend created to interact with my frontend created in my [Capstone](https://github.com/MarkArren/PhotoSharing) project which replaces the existing Firebase backend. All data is stored in a PostGreSQL database, images/ videos are stored on a Google Cloud Platform Bucket.
 
 ## Features
 * Sign up/ Log in (JWT, bcrypt)
 * Create posts (Images/ videos upload to a GCP Bucket)
-* Delete posts
-* Like & unlike posts
-* Add & remove your comments
+* Edit/ delete posts
+* Like/ unlike posts
+* Add/ remove your comments
+* Edit profile (avatar, bio, username, name)
 
 ## TODO Features
-* /GET accounts
-* Edit your posts
-* Edit your account
+
 
 ### Technology
 * Node.js
