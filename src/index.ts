@@ -4,6 +4,7 @@ import multer from 'multer';
 import postRoutes from './routes/posts';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
+import feedRoutes from './routes/feed';
 import { query } from './db/index';
 import passport from 'passport';
 
@@ -21,6 +22,7 @@ app.use(passport.initialize());
 // Create routes
 app.use('/', authRoutes);
 app.use('/post', postRoutes);
+app.use('/feed', feedRoutes);
 app.use('/', userRoutes);
 
 // Test routes

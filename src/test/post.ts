@@ -71,7 +71,6 @@ describe('/post tests', () => {
                 .post('/post')
                 .set('content-type', 'multipart/form-data')
                 .auth(tokenA, { type: 'bearer' })
-                .field('token', tokenA)
                 .field('caption', 'Test post with single image')
                 .attach('images', fs.readFileSync(`${__dirname}\\img\\Bandflames2.png`), 'tests\\file.png');
 

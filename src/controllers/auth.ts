@@ -35,6 +35,7 @@ export const login = async (req: Request, res: Response) => {
         token,
         refreshToken,
         message: 'Successful login',
+        user,
     });
 };
 
@@ -78,6 +79,7 @@ export const signup = async (req: Request, res: Response) => {
         token: newToken,
         refreshToken: newRefreshToken,
         message: 'Successfully signedup',
+        user,
     });
 };
 

@@ -2,8 +2,6 @@ import { query } from '../db/index';
 import bcrypt from 'bcrypt';
 import { QueryResult } from 'pg';
 import jwt from 'jsonwebtoken';
-import { TcpSocketConnectOpts } from 'net';
-import crypto from 'crypto';
 
 /**
  * Inserts new user into 'user' table
@@ -64,7 +62,7 @@ export const createUser = (email: string, password: string, username: string, na
 };
 
 /**
- * Get user from DB and verifys the password is correct
+ * Get user from DB with email and verifys the password is correct
  * @param email Email of user
  * @param password Password of user
  * @returns Promise<object> - User
@@ -90,7 +88,7 @@ export const loginUser = async (email: string, password: string) => {
             reject(err);
         }
 
-        if (passwordValid) resolve(user);
+        if (passwordValid) resolve({ id: user.id, email: user.email, username: user.username });
         reject('Incorrect Password');
     });
 };
